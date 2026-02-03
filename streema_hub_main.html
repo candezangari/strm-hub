@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Streema Hub</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Apply theme as early as possible (prevents "reset to light" on refresh in embeds) -->
+  <script>
+    (function () {
+      const THEME_KEY = "streemaHubTheme";
+
+      // localStorage first
+      try {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === "dark" || saved === "light") {
+          document.documentElement.setAttribute("data-theme", saved);
+          return;
+        }
+      } catch (e) {}
+
+      // window.name fallback
+      try {
+        const obj = window.name ? JSON.parse(window.name) : {};
+        const saved2 = obj[THEME_KEY];
+        if (saved2 === "dark" || saved2 === "light") {
+          document.documentElement.setAttribute("data-theme", saved2);
+          return;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+    /* =========================
+       THEME TOKENS (LIGHT DEFAULT)
+       ========================= */
+    :root{
+      --bg: #f6f9ff;
+      --bg2: #ffffff;
+      --text: rgba(15,23,42,0.92);
+      --muted: rgba(15,23,42,0.60);
+      --border: rgba(15,23,42,0.10);
+      --shadow: 0 20px 70px rgba(15,23,42,0.12);
+
+      /* ✅ Celeste-only palette */
+      --accent: #2d91ee;               /* primary */
+      --accent2:#6ecbff;               /* soft */
+      --accentGlow: rgba(45,145,238,.22);
+      --accentFaint: rgba(45,145,238,.14);
+
+      --card: rgba(255,255,255,.78);
+      --card2: rgba(255,255,255,.62);
+
+      --font-ui: Inter, system-ui, sans-serif;
+      --font-brand: "Space Grotesk", Inter, system-ui, sans-serif;
+
+      --radius-xl: 22px;
+      --radius-lg: 18px;
+
+      color-scheme: light;
+    }
+
+    /* Dark theme overrides */
+    html[data-theme="dark"]{
+      --bg: #070A12;
+      --bg2:#0b1020;
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 18px 70px rgba(0,0,0,0.55);
+
+      --accent: #2d91ee;
+      --accent2:#6ecbff;
+      --accentGlow: rgba(45,145,238,.30);
+      --accentFaint: rgba(110,203,255,.12);
+
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.03);
+
+      color-scheme: dark;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family: var(--font-ui);
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 10%, rgba(110,203,255,.24), transparent 60%),
+        radial-gradient(780px 520px at 82% 12%, rgba(45,145,238,.18), transparent 60%),
+        radial-gradient(720px 520px at 55% 95%, rgba(45,145,238,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    .wrap{
+      min-height:100%;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+
+    /* ---------- NAVBAR ---------- */
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(to bottom, rgba(255,255,255,.70), rgba(255,255,255,.38));
+      border-bottom: 1px solid var(--border);
+    }
+
+    html[data-theme="dark"] header{
+      background: linear-gradient(to bottom, rgba(7,10,18,.85), rgba(7,10,18,.45));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav{
+      max-width:1100px;
+      margin:0 auto;
+      padding:9px 18px; /* bajita */
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-logo{
+      height:20px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.18));
+    }
+    html[data-theme="dark"] .brand-logo{
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.40));
+    }
+
+    .brand-name{
+      font-family: var(--font-brand);
+      font-size:18px;
+      font-weight:700;
+      letter-spacing:.3px;
+      margin-bottom: -6px;
+    }
+
+    .nav-right{
+      display:flex;
+      gap:10px;
+      font-size:13px;
+      font-weight:800;
+      color: var(--muted);
+      align-items:center;
+    }
+
+    .chip{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+
+    html[data-theme="dark"] .chip{
+      box-shadow: none;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
+      box-shadow: 0 0 0 4px var(--accentFaint);
+    }
+
+    /* ---------- THEME SWITCH ---------- */
+    .theme-toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+      cursor:pointer;
+      user-select:none;
+    }
+
+    html[data-theme="dark"] .theme-toggle{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:none;
+    }
+
+    .theme-toggle input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .switch{
+      width:42px;
+      height:24px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(45,145,238,.14);
+      position:relative;
+      transition: background .2s ease;
+    }
+
+    html[data-theme="dark"] .switch{
+      background: rgba(110,203,255,.14);
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .knob{
+      position:absolute;
+      top:50%;
+      left:3px;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      transform: translateY(-50%);
+      background: radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,.72));
+      box-shadow: 0 8px 18px rgba(15,23,42,.18);
+      transition: left .2s ease;
+    }
+
+    html[data-theme="dark"] .switch .knob{ left:21px; }
+
+    .toggle-emoji{
+      font-size:14px;
+      line-height:1;
+    }
+
+    /* ---------- MAIN ---------- */
+    main{
+      padding:14px 18px 10px;
+    }
+
+    /* ===== Announcement ===== */
+    .announcement{
+      max-width:860px;
+      margin: 0 auto 14px;
+      padding: 16px 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+
+      background:
+        radial-gradient(900px 140px at 20% 0%, rgba(110,203,255,.26), transparent 55%),
+        radial-gradient(900px 160px at 80% 0%, rgba(45,145,238,.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.84), rgba(255,255,255,.58));
+
+      box-shadow:
+        0 18px 46px rgba(15,23,42,.10),
+        0 0 0 1px rgba(45,145,238,.16);
+
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    html[data-theme="dark"] .announcement{
+      background:
+        radial-gradient(900px 140px at 20% 0%, rgba(110,203,255,.18), transparent 55%),
+        radial-gradient(900px 160px at 80% 0%, rgba(45,145,238,.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow:
+        0 16px 44px rgba(0,0,0,.45),
+        0 0 0 1px rgba(45,145,238,.18);
+    }
+
+    .announcement.is-hidden{ display: none; }
+
+    .announcement-eyebrow{
+      font-size: 11px;
+      letter-spacing: .35px;
+      font-weight: 900;
+      color: rgba(15,23,42,.70);
+      text-transform: uppercase;
+    }
+
+    html[data-theme="dark"] .announcement-eyebrow{
+      color: rgba(255,255,255,.75);
+    }
+
+    .announcement-title{
+      font-family: var(--font-brand);
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: .2px;
+    }
+
+    .announcement-text{
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* ===== Panel ===== */
+    .panel{
+      max-width:860px;
+      margin:0 auto;
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(900px 260px at 10% 0%, rgba(45,145,238,.12), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.84), rgba(255,255,255,.58));
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    html[data-theme="dark"] .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .panel-head{
+      padding:10px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    html[data-theme="dark"] .panel-head{
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .panel-title{
+      font-family: var(--font-brand);
+      font-size:15px;
+      font-weight:750;
+      letter-spacing:.2px;
+    }
+
+    .panel-meta{
+      font-size:12px;
+      font-weight:800;
+      color: var(--muted);
+    }
+
+    .embed{
+      height: clamp(240px, 60vh, 480px);
+      background:
+        radial-gradient(800px 220px at 50% 0%, rgba(45,145,238,.08), transparent 60%),
+        rgba(15,23,42,.06);
+    }
+
+    html[data-theme="dark"] .embed{
+      background: rgba(0,0,0,.35);
+    }
+
+    iframe{
+      width:100%;
+      height:100%;
+      border:0;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      padding:10px 16px;
+      border-top:1px solid var(--border);
+      background: rgba(255,255,255,.34);
+    }
+
+    html[data-theme="dark"] .actions{
+      border-top:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.02);
+    }
+
+    .btnlink{
+      padding:8px 12px;
+      border-radius: 999px;
+      font-size:13px;
+      font-weight:900;
+      color: rgba(15,23,42,.88);
+      text-decoration:none;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.62));
+      box-shadow: 0 10px 22px rgba(15,23,42,.08);
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+
+    .btnlink:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(15,23,42,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
+    }
+
+    html[data-theme="dark"] .btnlink{
+      color: rgba(255,255,255,.90);
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:none;
+    }
+
+    html[data-theme="dark"] .btnlink:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.12);
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer{
+      border-top:1px solid var(--border);
+      background: rgba(255,255,255,.40);
+    }
+
+    html[data-theme="dark"] footer{
+      border-top:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,.25);
+    }
+
+    .foot{
+      max-width:1100px;
+      margin:0 auto;
+      padding:10px 18px;
+      font-size:12px;
+      color: var(--muted);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .tagline{
+      font-family: var(--font-brand);
+      font-weight:650;
+      letter-spacing:.2px;
+      color: rgba(15,23,42,.72);
+    }
+
+    html[data-theme="dark"] .tagline{
+      color: rgba(255,255,255,.72);
+    }
+
+    @media (max-width:900px){
+      .nav-right{ display:none; }
+      .panel, .announcement{ max-width:100%; }
+      .embed{ height: clamp(300px, 50vh, 520px); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="nav">
+        <div class="brand">
+          <img
+            id="brandLogo"
+            class="brand-logo"
+            src="https://statics-v3.streema.com/static/img/logo.streema.header.bcd299832143.png"
+            alt="Streema"
+          />
+          <div class="brand-name">Hub</div>
+        </div>
+
+        <div class="nav-right">
+          <div class="chip"><span class="dot"></span> Live</div>
+          <div class="chip" id="clock">--:--</div>
+
+          <label class="theme-toggle" title="Cambiar tema">
+            <span class="toggle-emoji" id="themeEmoji">☀️</span>
+            <span class="switch"><span class="knob"></span></span>
+            <input id="themeSwitch" type="checkbox" aria-label="Toggle dark mode">
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="announcement is-hidden">
+        <div class="announcement-eyebrow">📣 NEWS NEWS NEWS</div>
+        <div class="announcement-title">Espacio para anuncios anuncios anuncios</div>
+        <div class="announcement-text">
+          Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum.
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Streema Hub</div>
+          <div class="panel-meta">Última carga: <span id="lastRefresh">—</span></div>
+        </div>
+
+        <div class="embed">
+          <iframe
+            src="https://lookerstudio.google.com/embed/reporting/4c0fb85b-086d-4c68-8b7b-568f6ec11af1/page/nPImF"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="actions">
+          <a class="btnlink" href="https://app.shortcut.com/streema/stories" target="_blank">Shortcut</a>
+          <a class="btnlink" href="https://streema.slite.com/" target="_blank">Slite</a>
+          <a class="btnlink" href="https://streema.slite.com/app/channels/S9ToX7VUx~" target="_blank">Weekly</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="foot">
+        <div>© <span id="year"></span> Streema</div>
+        <div class="tagline">Data, softly tuned.</div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const pad = n => String(n).padStart(2,"0");
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    setInterval(() => {
+      const d = new Date();
+      document.getElementById("clock").textContent =
+        `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }, 1000);
+
+    (() => {
+      const d = new Date();
+      document.getElementById("lastRefresh").textContent =
+        `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    })();
+
+    /* =========================
+       THEME + LOGO SWAP (persist)
+       ========================= */
+    const THEME_KEY = "streemaHubTheme";
+    const root = document.documentElement;
+    const themeSwitch = document.getElementById("themeSwitch");
+    const themeEmoji = document.getElementById("themeEmoji");
+    const brandLogo = document.getElementById("brandLogo");
+
+    const LOGOS = {
+      light: "https://help.streema.com/wp-content/uploads/2024/10/cropped-LogoStreema.png",
+      dark:  "https://statics-v3.streema.com/static/img/logo.streema.header.bcd299832143.png"
+    };
+
+    // localStorage + window.name fallback
+    const store = {
+      get() {
+        try {
+          const v = localStorage.getItem(THEME_KEY);
+          if (v) return v;
+        } catch (e) {}
+
+        try {
+          const obj = window.name ? JSON.parse(window.name) : {};
+          return obj[THEME_KEY] || null;
+        } catch (e) {
+          return null;
+        }
+      },
+      set(value) {
+        try { localStorage.setItem(THEME_KEY, value); } catch (e) {}
+
+        try {
+          const obj = window.name ? JSON.parse(window.name) : {};
+          obj[THEME_KEY] = value;
+          window.name = JSON.stringify(obj);
+        } catch (e) {}
+      }
+    };
+
+    function applyTheme(theme){
+      root.dataset.theme = theme;
+
+      const isDark = theme === "dark";
+      themeSwitch.checked = isDark;
+      themeEmoji.textContent = isDark ? "🌙" : "☀️";
+
+      if (LOGOS[theme]) brandLogo.src = LOGOS[theme];
+    }
+
+    function setTheme(theme){
+      applyTheme(theme);
+      store.set(theme);
+    }
+
+    // Init: if saved exists, DO NOT override — just sync UI
+    (function initTheme(){
+      const saved = store.get();
+      if (saved === "dark" || saved === "light") {
+        // already applied in <head>, here we only sync controls
+        applyTheme(saved);
+        return;
+      }
+      const prefersDark =
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(prefersDark ? "dark" : "light");
+    })();
+
+    themeSwitch.addEventListener("change", () => {
+      setTheme(themeSwitch.checked ? "dark" : "light");
+    });
+
+    // click on whole label (more robust in some embeds)
+    const toggleLabel = themeSwitch.closest("label");
+    if (toggleLabel) {
+      toggleLabel.addEventListener("click", () => {
+        setTimeout(() => setTheme(themeSwitch.checked ? "dark" : "light"), 0);
+      });
+    }
+  </script>
+</body>
+</html>
